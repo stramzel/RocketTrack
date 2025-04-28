@@ -20,8 +20,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -151,12 +151,12 @@ public class AppService extends Service {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// The PendingIntent to launch our activity if the user selects this notification
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, Main.class), 0);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, Main.class), PendingIntent.FLAG_IMMUTABLE);
 
 		CharSequence text = getText(R.string.telemetry_service_started);
 
@@ -168,11 +168,27 @@ public class AppService extends Service {
 		notificationBuilder.setContentText(text);
 		notificationBuilder.setOngoing(true);
 		notificationBuilder.setContentIntent(contentIntent);
-		
+
 		Notification notification = notificationBuilder.build();
 
+		/* TODO
+			org.rockettrack                      E  FATAL EXCEPTION: main
+				Process: org.rockettrack, PID: 26339
+				android.app.RemoteServiceException$CannotPostForegroundServiceNotificationException: Bad notification for startForeground
+					at android.app.ActivityThread.throwRemoteServiceException(ActivityThread.java:2192)
+					at android.app.ActivityThread.-$$Nest$mthrowRemoteServiceException(Unknown Source:0)
+					at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2493)
+					at android.os.Handler.dispatchMessage(Handler.java:111)
+					at android.os.Looper.loopOnce(Looper.java:242)
+					at android.os.Looper.loop(Looper.java:362)
+					at android.app.ActivityThread.main(ActivityThread.java:8448)
+					at java.lang.reflect.Method.invoke(Native Method)
+					at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+					at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:992)
+
+		 */
 		// Move us into the foreground.
-		startForeground(NOTIFICATION, notification);
+		//startForeground(NOTIFICATION, notification);
 
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
@@ -221,7 +237,7 @@ public class AppService extends Service {
 			mAltosBluetooth = new RocketTrackBluetooth(device, mHandler);
 			setState(STATE_CONNECTING);
 		}
-		
+
 	}
 
 	public void stopService() {
@@ -266,10 +282,10 @@ public class AppService extends Service {
 		notificationBuilder.setContentText(text);
 		notificationBuilder.setProgress(0, 0, false);
 		updateNotification();
-		
+
 		setState(STATE_CONNECTED);
 
-		// Send setup commands: 
+		// Send setup commands:
 		String cmd;
 		// this should increase the run time of the tx.
 		cmd = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
@@ -340,5 +356,5 @@ public class AppService extends Service {
 		NotificationManager mgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		mgr.notify(NOTIFICATION, notificationBuilder.build());
 	}
-	
+
 }

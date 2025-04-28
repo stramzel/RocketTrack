@@ -20,9 +20,9 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTabHost;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTabHost;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -153,24 +153,27 @@ public class Main extends FragmentActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.connect_scan:
+        int itemId = item.getItemId();
+        if (itemId == R.id.connect_scan) {
 			// Launch the DeviceListActivity to see devices and do scan
-			selectDevice();
-			return true;
-		case R.id.save_recording:
-			saveRawRecording();
-			return true;
-		case R.id.menu_preferences:
-			Intent i = new Intent(this,Preferences.class);
-			startActivity(i);
-			break;
-		case R.id.stop_service:
-			onDoStop();
-			break;
-		}
-		return false;
-	}
+            selectDevice();
+            return true;
+        } else if (itemId == R.id.save_recording) {
+			// Save the raw recording
+            saveRawRecording();
+            return true;
+        } else if (itemId == R.id.menu_preferences) {
+			// Open the Preferences activity
+            Intent preferencesIntent = new Intent(this, Preferences.class);
+            startActivity(preferencesIntent);
+            return true;
+        } else if (itemId == R.id.stop_service) {
+			// Stop the service
+            onDoStop();
+            return true;
+        }// Handle other menu item selections here if needed
+        return super.onOptionsItemSelected(item);
+    }
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {

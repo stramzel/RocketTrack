@@ -27,6 +27,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.Manifest;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
@@ -40,6 +41,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 /**
  * This Activity appears as a dialog. It lists any paired devices and
  * devices detected in the area after discovery. When a device is chosen
@@ -47,7 +54,7 @@ import android.widget.TextView;
  * Activity in the result Intent.
  */
 public class DeviceListActivity extends Activity {
-	
+
 	private final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 	// Debugging
@@ -57,13 +64,15 @@ public class DeviceListActivity extends Activity {
 	// Return Intent extra
 	public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
+	private static final int REQUEST_BLUETOOTH_CONNECT = 123;
+
 	// Member fields
 	private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
 	private ArrayAdapter<String> mNewDevicesArrayAdapter;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// Setup the window
@@ -72,6 +81,39 @@ public class DeviceListActivity extends Activity {
 
 		// Set result CANCELED incase the user backs out
 		setResult(Activity.RESULT_CANCELED);
+
+		// Check and request Bluetooth permission
+		boolean hasPermissions = EasyPermissions.hasPermissions(this,
+				Manifest.permission.BLUETOOTH_CONNECT,
+				Manifest.permission.BLUETOOTH_SCAN);
+		if (hasPermissions) {
+			// Permission already granted, proceed with Bluetooth functionality
+			getBondedDevices();
+		} else {
+			// Request Bluetooth permission
+			EasyPermissions.requestPermissions(
+					this,
+					"Bluetooth permission is required to access bonded devices.",
+					REQUEST_BLUETOOTH_CONNECT,
+					Manifest.permission.BLUETOOTH_SCAN
+			);
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+	}
+
+	@AfterPermissionGranted(REQUEST_BLUETOOTH_CONNECT)
+	private void getBondedDevices() {
+		// This method will be called when Bluetooth permission is granted
+		// Proceed with accessing Bluetooth functionality, e.g., get paired devices
+		// TODO
+		// Set<BluetoothDevice> pairedDevices = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
+		// Handle paired devices as needed
+
 
 		// Initialize the button to perform device discovery
 		Button scanButton = (Button) findViewById(R.id.button_scan);
@@ -111,6 +153,10 @@ public class DeviceListActivity extends Activity {
 		// Get a set of currently paired devices
 		Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
 
+		extracted(pairedDevices);
+	}
+
+	private void extracted(Set<BluetoothDevice> pairedDevices) {
 		// If there are paired devices, add each one to the ArrayAdapter
 		if (pairedDevices.size() > 0) {
 			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
@@ -124,7 +170,7 @@ public class DeviceListActivity extends Activity {
 			mPairedDevicesArrayAdapter.add(noDevices);
 		}
 	}
-	
+
 	private boolean isSPPDevice( BluetoothDevice device ) {
 		
 		ParcelUuid[] supportedFunctions = device.getUuids();
