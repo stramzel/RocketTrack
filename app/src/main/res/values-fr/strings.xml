@@ -23,6 +23,7 @@
 
 
     <!-- Service -->
+    <string name="menu_log">Journal de l\'app</string>
     <string name="telemetry_service_label">RocketTrack Telemetry Service</string>
     <string name="telemetry_service_connecting">Connection à</string>
     <string name="telemetry_service_connected">Connecté à</string>

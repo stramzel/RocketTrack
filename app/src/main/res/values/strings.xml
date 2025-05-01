@@ -20,6 +20,7 @@
     <string name="stop_service">Stop Service</string>
     <string name="save_recording">Save Recording</string>
     <string name="menu_preferences">Preferences</string>
+    <string name="menu_log">App Log</string>
 
 
     <!-- Service -->

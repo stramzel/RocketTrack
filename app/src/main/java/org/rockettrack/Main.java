@@ -171,7 +171,12 @@ public class Main extends FragmentActivity {
 			// Stop the service
             onDoStop();
             return true;
-        }// Handle other menu item selections here if needed
+        } else if (itemId == R.id.menu_log){
+			Intent intent = new Intent(this, LogActivity.class);
+			startActivity(intent);
+			return true;
+			// Handle other menu item selections here if needed
+		}
         return super.onOptionsItemSelected(item);
     }
 
